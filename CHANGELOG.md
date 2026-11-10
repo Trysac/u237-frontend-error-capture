@@ -9,4 +9,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added frontend error capture with redaction, fingerprinting, deduplication, rate limiting, and batching.
 - Initial project structure from the factory utility template.
