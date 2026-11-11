@@ -1,31 +1,24 @@
-# Security practices
+# Security
 
-How this repository keeps the package and its users safe. The disclosure policy is in
-[../SECURITY.md](../SECURITY.md).
+## Threat Model
 
-## Secrets
+This library processes untrusted error data from browser events and direct `capture` calls. The defended threats are leaks of sensitive tokens, emails, numeric identifiers and URL credentials or parameters; unbounded error volume or payload size; and failures in error reporting destabilising the host application.
 
-- No secrets, tokens or credentials in the repository, commit history, logs or prompts.
-- `gitleaks` runs as the last step of `npm run check` and as a dedicated CI job. Its configuration is
-  `.gitleaks.toml`.
-- Publishing credentials live only in the CI secret store or the maintainer's local npm configuration.
+### Defended
 
-## Dependencies
+- `redactText` is applied to messages, breadcrumb messages, context values and frame function names in this order: Bearer tokens to `Bearer [redacted]`, JWT-shaped values to `[jwt]`, email addresses to `[email]`, and 13-19 digit runs to `[number]`.
+- `context.url` and URL-shaped frame locations use `redactUrl`: userinfo and fragment are removed, and query parameters named `token`, `access_token`, `id_token`, `password`, `secret`, `key`, `api_key`, `code`, `session` or `sid` are set to `REDACTED` case-insensitively. Invalid URLs become `[invalid url]`. Opaque frame locations use text redaction.
+- Messages are cut to 1,000 characters plus ` [truncated]`; stack input is cut to 50,000 characters; `parseStack` defaults to 50 frames; breadcrumb messages are cut to 200 characters; `maxBreadcrumbs` defaults to 50; `maxQueue` defaults to 100 and drops the oldest entry with `queue_full`; `batchSize` defaults to 10; `maxPerMinute` defaults to 30 reports per rolling 60,000 ms and emits `rate_limited`; `dedupWindowMs` defaults to 60,000 ms.
+- `capture` never throws. It catches failures from user-supplied `toString`, non-string context values are coerced with `String` in a guarded helper, `onEvent` hook failures are swallowed, and a failed `transport.send` drops the batch and emits `send_failed`.
+- The implementation uses standard built-ins only and has no runtime dependencies.
 
-- Runtime dependencies are avoided; development dependencies are limited to the toolchain listed in
-  [STACK.md](STACK.md).
-- Dependabot opens weekly updates for npm packages and GitHub Actions.
-- Commit the generated `package-lock.json` so installs are reproducible.
+### Not defended
 
-## Code
+- Source map resolution.
+- Session replay and performance metrics.
+- Sending, backend storage and retries; the caller supplies `transport` and a failed send is dropped.
+- Sensitive data that does not match the redaction patterns or the listed query parameter names is not detected by this library.
 
-- No `eval`, dynamic `Function` construction or shelling out from library code.
-- Inputs from callers are validated and rejected with explicit errors.
-- The `security` step of `npm run check` runs ESLint with eslint-plugin-security only (Biome stays the
-  linter). Its configuration is `scripts/eslint-security.config.mjs`; inline `eslint-disable` comments are
-  ignored, so a finding is fixed in the code, never silenced.
+## Reporting Vulnerabilities
 
-## Publishing
-
-- Packages are published from a clean checkout after `npm run check` passes.
-- Only `dist/` is included in the published tarball.
+Report security issues to the repository maintainers.
