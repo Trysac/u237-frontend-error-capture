@@ -1,6 +1,5 @@
 # @trysac/frontend-error-capture
 
-[![npm version](https://img.shields.io/npm/v/@trysac/frontend-error-capture)](https://www.npmjs.com/package/@trysac/frontend-error-capture)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A small, dependency-free TypeScript library for capturing frontend errors with parsed stacks, breadcrumbs, redacted messages and URLs, stable fingerprints, deduplication, rate limiting, and batching through an injected transport.
@@ -11,9 +10,15 @@ Front-end errors are invisible unless the page reports them, and a naive `window
 
 ## Installation
 
-```bash
-npm install @trysac/frontend-error-capture
+Not published to npm yet. Build it from a clone, then install it from the local path:
+
+```sh
+git clone https://github.com/Trysac/u237-frontend-error-capture.git
+cd u237-frontend-error-capture && npm ci && npm run build
+cd ../your-project && npm install ../u237-frontend-error-capture
 ```
+
+Imports keep the package name: `import { ... } from "@trysac/frontend-error-capture"`.
 
 ## Usage
 
